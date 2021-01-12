@@ -66,7 +66,25 @@ data class PlayerMatch(
     val assists: Int,
     val skill: Int?,
     @Json(name = "party_size") val partySize: Int,
-)
+) {
+    /**
+     * Whether the user was on Radiant.
+     */
+    val radiant: Boolean
+        get() = playerSlot in 0..127
+
+    /**
+     * Whether the user was on Dire.
+     */
+    val dire: Boolean
+        get() = !radiant
+
+    /**
+     * Whether the player won the match.
+     */
+    val playerWon: Boolean
+        get() = (radiantWin && radiant) || (!radiantWin && dire)
+}
 
 @JsonClass(generateAdapter = true)
 data class PlayerWinLoss(
