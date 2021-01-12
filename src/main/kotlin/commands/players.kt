@@ -41,77 +41,76 @@ val last = Command(
 ) { event ->
     val channel = event.message.channel
     val mentions = event.message.mentionedUsers
-    if (mentions.size == 0) {
-        channel.sendMessage("Please specify a player.").queue()
-        return@Command
-    }
-    val snowflake = mentions[0].idLong
+
+    val snowflakes = if (mentions.isEmpty()) listOf(event.message.author.idLong) else mentions.map { it.idLong }
+
     val steamIds = transaction(DbSettings.db) {
-        NotablePlayers.select { NotablePlayers.snowflake eq snowflake }.map { it[NotablePlayers.steamId] }
+        NotablePlayers.select { NotablePlayers.snowflake.inList(snowflakes) }.map { it[NotablePlayers.steamId] }
     }
     if (steamIds.isEmpty()) {
         // TODO: 12/01/2021 @ the user not in the list
         channel.sendMessage("This user is not in the notable player list.").queue()
         return@Command
     }
-    val steamId = steamIds[0]
 
-    val openDotaService: OpenDotaService = getInstance()
-    val matchesResponse = openDotaService.getPlayerMatches(steamId, 20)
-    val playerResponse = openDotaService.getPlayer(steamId)
-    if (!matchesResponse.isSuccessful || !playerResponse.isSuccessful) {
-        channel.sendMessage("Could not grab user's matches, try again later.").queue()
-        return@Command
-    }
-    val match = matchesResponse.body()!![0]
-    val player = playerResponse.body()!!
-
-    val heroes = transaction(DbSettings.db) {
-        Heroes.select { Heroes.heroId eq match.heroId }.map { it[Heroes.localizedName] to it[Heroes.name] }
-    }
-    val heroData = if (heroes.isNotEmpty()) {
-        heroes[0].first to "http://dotabase.dillerm.io/dota-vpk/panorama/images/heroes/selection/${heroes[0].second}_png.png"
-    } else {
-        "Hero not found" to "https://pbs.twimg.com/profile_images/807755806837850112/WSFVeFeQ.jpg"
-    }
-
-    // TODO: 12/01/2021 add game mode field
-    channel.sendMessage(
-        embed {
-            author {
-                name = event.jda.selfUser.name
-                url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                iconUrl = event.jda.selfUser.avatarUrl
-            }
-            color = Color(167, 39, 20)
-            title {
-                title = "Match Result"
-            }
-            thumbnail = heroData.second
-            description =
-                "${player.profile.personaname} " + (if (match.playerWon) "won" else "lost") + " as " + (if (match.radiant) "Radiant" else "Dire") + "."
-            fields {
-                field {
-                    name = "Hero Played"
-                    value = heroData.first
-                    inline = true
-                }
-                field {
-                    name = "K/D/A"
-                    value = "${match.kills}/${match.deaths}/${match.assists}"
-                    inline = true
-                }
-                field {
-                    name = "DOTABUFF"
-                    value = "https://www.dotabuff.com/matches/${match.matchId}"
-                }
-                field {
-                    name = "OpenDota"
-                    value = "https://www.opendota.com/matches/${match.matchId}"
-                }
-            }
+    for (steamId in steamIds) {
+        val openDotaService: OpenDotaService = getInstance()
+        val matchesResponse = openDotaService.getPlayerMatches(steamId, 20)
+        val playerResponse = openDotaService.getPlayer(steamId)
+        if (!matchesResponse.isSuccessful || !playerResponse.isSuccessful) {
+            channel.sendMessage("Could not grab user's matches, try again later.").queue()
+            return@Command
         }
-    ).queue()
+        val match = matchesResponse.body()!![0]
+        val player = playerResponse.body()!!
+
+        val heroes = transaction(DbSettings.db) {
+            Heroes.select { Heroes.heroId eq match.heroId }.map { it[Heroes.localizedName] to it[Heroes.name] }
+        }
+        val heroData = if (heroes.isNotEmpty()) {
+            heroes[0].first to "http://dotabase.dillerm.io/dota-vpk/panorama/images/heroes/selection/${heroes[0].second}_png.png"
+        } else {
+            "Hero not found" to "https://pbs.twimg.com/profile_images/807755806837850112/WSFVeFeQ.jpg"
+        }
+
+        // TODO: 12/01/2021 add game mode field
+        channel.sendMessage(
+            embed {
+                author {
+                    name = event.jda.selfUser.name
+                    url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    iconUrl = event.jda.selfUser.avatarUrl
+                }
+                color = Color(167, 39, 20)
+                title {
+                    title = "Match Result"
+                }
+                thumbnail = heroData.second
+                description =
+                    "${player.profile.personaname} " + (if (match.playerWon) "won" else "lost") + " as " + (if (match.radiant) "Radiant" else "Dire") + "."
+                fields {
+                    field {
+                        name = "Hero Played"
+                        value = heroData.first
+                        inline = true
+                    }
+                    field {
+                        name = "K/D/A"
+                        value = "${match.kills}/${match.deaths}/${match.assists}"
+                        inline = true
+                    }
+                    field {
+                        name = "DOTABUFF"
+                        value = "https://www.dotabuff.com/matches/${match.matchId}"
+                    }
+                    field {
+                        name = "OpenDota"
+                        value = "https://www.opendota.com/matches/${match.matchId}"
+                    }
+                }
+            }
+        ).queue()
+    }
 }
 
 private suspend fun addNotablePlayer(event: MessageReceivedEvent, sId: Long, s: Long) {
