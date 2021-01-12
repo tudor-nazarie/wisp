@@ -9,7 +9,7 @@ import network.OpenDotaService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-val heroes = Command(listOf("heroes"), "Manage the hero cache") { event ->
+val heroes = Command(listOf("hero", "heroes"), "Manage the hero cache") { event ->
     val content = event.message.contentRaw
     val tokens = content.split(Regex("\\s+"))
 
