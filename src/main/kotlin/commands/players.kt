@@ -3,10 +3,13 @@ package commands
 import db.DbSettings
 import db.NotablePlayers
 import di.getInstance
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.awt.Color
+import java.time.Instant
 import java.time.LocalDateTime
 
 val players = Command(
@@ -22,7 +25,7 @@ val players = Command(
             val mentions = event.message.mentionedUsers
             // TODO: 12/01/2021 add error handling
             if (mentions.size > 0) {
-                val snowflake =  mentions[0].idLong
+                val snowflake = mentions[0].idLong
                 addNotablePlayer(event, steamId.toLong(), snowflake)
             }
         }
@@ -53,7 +56,23 @@ private suspend fun addNotablePlayer(event: MessageReceivedEvent, sId: Long, s: 
         }
     }
 
-    channel.sendMessage("Successfully added notable player '${player.profile.personaname}'.").queue()
+    channel.sendMessage(
+        EmbedBuilder()
+            .setTitle(player.profile.personaname, "https://steamcommunity.com/profiles/${player.profile.steamid}/")
+            .setDescription("Added notable player ${player.profile.personaname}")
+            .setAuthor(
+                event.jda.selfUser.name,
+                "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                event.jda.selfUser.avatarUrl
+            )
+            .setThumbnail(player.profile.avatarfull)
+            .setColor(Color(167, 39, 20))
+            .setTimestamp(Instant.now())
+            .addField("DOTABUFF", "https://www.dotabuff.com/players/${player.profile.accountId}", false)
+            .addField("OpenDota", "https://www.opendota.com/players/${player.profile.accountId}", false)
+            .addField("STRATZ", "https://stratz.com/players/${player.profile.accountId}", false)
+            .build()
+    ).queue()
 }
 
 private fun countNotablePlayers(event: MessageReceivedEvent) {
