@@ -4,7 +4,7 @@ import db.DbSettings
 import db.Heroes
 import db.NotablePlayers
 import di.getInstance
-import net.dv8tion.jda.api.EmbedBuilder
+import dsl.embed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
 import org.jetbrains.exposed.sql.*
@@ -75,25 +75,42 @@ val last = Command(
         "Hero not found" to "https://pbs.twimg.com/profile_images/807755806837850112/WSFVeFeQ.jpg"
     }
 
-    val description =
-        "${player.profile.personaname} " + (if (match.playerWon) "won" else "lost") + " as " + (if (match.radiant) "Radiant" else "Dire") + "."
     // TODO: 12/01/2021 add game mode field
     channel.sendMessage(
-        EmbedBuilder()
-            .setAuthor(
-                event.jda.selfUser.name,
-                "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                event.jda.selfUser.avatarUrl
-            )
-            .setColor(Color(167, 39, 20))
-            .setTitle("Match Result")
-            .setThumbnail(heroData.second)
-            .setDescription(description)
-            .addField("Hero Played", heroData.first, true)
-            .addField("K/D/A", "${match.kills}/${match.deaths}/${match.assists}", true)
-            .addField("DOTABUFF", "https://www.dotabuff.com/matches/${match.matchId}", false)
-            .addField("OpenDota", "https://www.opendota.com/matches/${match.matchId}", false)
-            .build()
+        embed {
+            author {
+                name = event.jda.selfUser.name
+                url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                iconUrl = event.jda.selfUser.avatarUrl
+            }
+            color = Color(167, 39, 20)
+            title {
+                title = "Match Result"
+            }
+            thumbnail = heroData.second
+            description =
+                "${player.profile.personaname} " + (if (match.playerWon) "won" else "lost") + " as " + (if (match.radiant) "Radiant" else "Dire") + "."
+            fields {
+                field {
+                    name = "Hero Played"
+                    value = heroData.first
+                    inline = true
+                }
+                field {
+                    name = "K/D/A"
+                    value = "${match.kills}/${match.deaths}/${match.assists}"
+                    inline = true
+                }
+                field {
+                    name = "DOTABUFF"
+                    value = "https://www.dotabuff.com/matches/${match.matchId}"
+                }
+                field {
+                    name = "OpenDota"
+                    value = "https://www.opendota.com/matches/${match.matchId}"
+                }
+            }
+        }
     ).queue()
 }
 
@@ -119,21 +136,35 @@ private suspend fun addNotablePlayer(event: MessageReceivedEvent, sId: Long, s: 
     }
 
     channel.sendMessage(
-        EmbedBuilder()
-            .setAuthor(
-                event.jda.selfUser.name,
-                "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                event.jda.selfUser.avatarUrl
-            )
-            .setColor(Color(167, 39, 20))
-            .setTitle(player.profile.personaname, "https://steamcommunity.com/profiles/${player.profile.steamid}/")
-            .setDescription("Added notable player ${player.profile.personaname}")
-            .setThumbnail(player.profile.avatarfull)
-            .setTimestamp(Instant.now())
-            .addField("DOTABUFF", "https://www.dotabuff.com/players/${player.profile.accountId}", false)
-            .addField("OpenDota", "https://www.opendota.com/players/${player.profile.accountId}", false)
-            .addField("STRATZ", "https://stratz.com/players/${player.profile.accountId}", false)
-            .build()
+        embed {
+            author {
+                name = event.jda.selfUser.name
+                url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                iconUrl = event.jda.selfUser.avatarUrl
+            }
+            color = Color(167, 39, 20)
+            title {
+                title = player.profile.personaname
+                url = "https://steamcommunity.com/profiles/${player.profile.steamid}/"
+            }
+            description = "Added notable player ${player.profile.personaname}"
+            thumbnail = player.profile.avatarfull
+            timestamp = Instant.now()
+            fields {
+                field {
+                    name = "DOTABUFF"
+                    value = "https://www.dotabuff.com/players/${player.profile.accountId}"
+                }
+                field {
+                    name = "OpenDota"
+                    value = "https://www.opendota.com/players/${player.profile.accountId}"
+                }
+                field {
+                    name = "STRATZ"
+                    value = "https://stratz.com/players/${player.profile.accountId}"
+                }
+            }
+        }
     ).queue()
 }
 
