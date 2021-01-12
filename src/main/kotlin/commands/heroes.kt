@@ -6,10 +6,7 @@ import db.Heroes
 import di.getInstance
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.deleteAll
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 val heroes = Command(listOf("heroes"), "Manage the hero cache") { event ->
@@ -36,7 +33,9 @@ private suspend fun updateHeroCache(event: MessageReceivedEvent) {
     val rolesAdapter = moshi.adapter(List::class.java)
 
     transaction(DbSettings.db) {
-        SchemaUtils.create(Heroes)
+        if (!Heroes.exists()) {
+            SchemaUtils.create(Heroes)
+        }
         Heroes.deleteAll()
 
         for (hero in heroes) {
@@ -56,9 +55,11 @@ private suspend fun updateHeroCache(event: MessageReceivedEvent) {
 
 private fun countHeroCache(event: MessageReceivedEvent) {
     val count = transaction(DbSettings.db) {
-        SchemaUtils.create(Heroes)
-
-        Heroes.selectAll().toList().size
+        if (!Heroes.exists()) {
+            0
+        } else {
+            Heroes.selectAll().count()
+        }
     }
     event.channel.sendMessage("There are currently $count heroes in the cache.").queue()
 }

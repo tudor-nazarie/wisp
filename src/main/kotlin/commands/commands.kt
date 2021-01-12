@@ -16,4 +16,5 @@ val ping = Command(
 val commands: List<Command> = listOf(
     ping,
     heroes,
+    players,
 )
