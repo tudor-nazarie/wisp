@@ -15,13 +15,13 @@ class WispAdapter(private val config: Config) : ListenerAdapter() {
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-        if (event.message.author.isBot || !config.activators.contains(event.message.contentRaw[0])) {
+        val content = event.message.contentRaw
+        if (event.message.author.isBot || !config.activators.contains(content[0])) {
             return
         }
-        val content = event.message.contentRaw
         val commandString = content.split(Regex("\\s+"))[0].substring(1)
         val command: Command? = try {
-            commands.first { it.name == commandString }
+            commands.first { it.names.contains(commandString) }
         } catch (e: NoSuchElementException) {
             null
         }

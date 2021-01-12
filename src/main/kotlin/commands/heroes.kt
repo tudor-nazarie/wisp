@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-val heroes = Command("heroes", "Manage the hero cache") { event ->
+val heroes = Command(listOf("heroes"), "Manage the hero cache") { event ->
     val content = event.message.contentRaw
     val tokens = content.split(Regex("\\s+"))
 
