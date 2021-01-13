@@ -21,7 +21,7 @@ val players = Command(
     val tokens = content.split(Regex("\\s+"))
 
     when (tokens[1]) {
-        "new" -> {
+        "new", "add" -> {
             val steamId = tokens[2]
             val mentions = event.message.mentionedUsers
             // TODO: 12/01/2021 add error handling
@@ -30,8 +30,10 @@ val players = Command(
                 addNotablePlayer(event, steamId.toLong(), snowflake)
             }
         }
+        "delete", "remove", "rm" -> TODO()
         "count" -> countNotablePlayers(event)
         "purge" -> purgeNotablePlayers(event)
+        "help" -> TODO()
     }
 }
 
@@ -41,31 +43,43 @@ val last = Command(
 ) { event ->
     val channel = event.message.channel
     val mentions = event.message.mentionedUsers
+    val author = event.message.author
+    val activator = event.message.contentRaw[0]
 
-    val snowflakes = if (mentions.isEmpty()) listOf(event.message.author.idLong) else mentions.map { it.idLong }
+    val snowflakes = if (mentions.isNotEmpty()) mentions.map { it.idLong } else listOf(author.idLong)
 
-    val steamIds = transaction(DbSettings.db) {
-        NotablePlayers.select { NotablePlayers.snowflake.inList(snowflakes) }.map { it[NotablePlayers.steamId] }
+    val playerData: List<Pair<Long, Long>> = transaction(DbSettings.db) {
+        val result = mutableListOf<Pair<Long, Long>>()
+        snowflakes.forEach { snowflake ->
+            val query = NotablePlayers.select { NotablePlayers.snowflake eq snowflake }
+                .map { it[NotablePlayers.steamId] to it[NotablePlayers.snowflake] }
+            if (query.isEmpty()) {
+                channel.sendMessage(
+                    "User not in player database. Add them with '${activator}np add <steamId> <@$snowflake>'"
+                ).queue()
+            } else {
+                result.add(query[0])
+            }
+        }
+        result
     }
-    if (steamIds.isEmpty()) {
-        // TODO: 12/01/2021 @ the user not in the list
-        channel.sendMessage("This user is not in the notable player list.").queue()
-        return@Command
-    }
 
-    for (steamId in steamIds) {
-        val openDotaService: OpenDotaService = getInstance()
-        val matchesResponse = openDotaService.getPlayerMatches(steamId, 20)
-        val playerResponse = openDotaService.getPlayer(steamId)
+    val openDotaService: OpenDotaService = getInstance()
+    for (datum in playerData) {
+        val matchesResponse = openDotaService.getPlayerMatches(datum.first, 20)
+        val playerResponse = openDotaService.getPlayer(datum.first)
         if (!matchesResponse.isSuccessful || !playerResponse.isSuccessful) {
-            channel.sendMessage("Could not grab user's matches, try again later.").queue()
-            return@Command
+            channel.sendMessage(
+                "Could not grab matches for user <@${datum.second}>, Steam ID ${datum.first}, try again later."
+            ).queue()
+            continue
         }
         val match = matchesResponse.body()!![0]
         val player = playerResponse.body()!!
 
         val heroes = transaction(DbSettings.db) {
-            Heroes.select { Heroes.heroId eq match.heroId }.map { it[Heroes.localizedName] to it[Heroes.name] }
+            Heroes.select { Heroes.heroId eq match.heroId }
+                .map { it[Heroes.localizedName] to it[Heroes.name] }
         }
         val heroData = if (heroes.isNotEmpty()) {
             heroes[0].first to "http://dotabase.dillerm.io/dota-vpk/panorama/images/heroes/selection/${heroes[0].second}_png.png"

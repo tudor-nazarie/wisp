@@ -79,11 +79,14 @@ data class PlayerMatch(
     val dire: Boolean
         get() = !radiant
 
+    val direWin: Boolean
+        get() = !radiantWin
+
     /**
      * Whether the player won the match.
      */
     val playerWon: Boolean
-        get() = (radiantWin && radiant) || (!radiantWin && dire)
+        get() = (radiantWin && radiant) || (direWin && dire)
 }
 
 @JsonClass(generateAdapter = true)
