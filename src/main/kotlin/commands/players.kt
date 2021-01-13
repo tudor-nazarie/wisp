@@ -24,13 +24,18 @@ val players = Command(
         "new", "add" -> {
             val steamId = tokens[2]
             val mentions = event.message.mentionedUsers
-            // TODO: 12/01/2021 add error handling
             if (mentions.size > 0) {
                 val snowflake = mentions[0].idLong
                 addNotablePlayer(event, steamId.toLong(), snowflake)
+            } else {
+                event.channel.sendMessage(
+                    "Please specify a user to add."
+                ).queue()
             }
         }
-        "delete", "remove", "rm" -> TODO()
+        "delete", "remove", "rm" -> event.message.mentionedUsers
+            .map { it.idLong }
+            .forEach { deleteNotablePlayer(event, it) }
         "count" -> countNotablePlayers(event)
         "purge" -> purgeNotablePlayers(event)
         "help" -> TODO()
@@ -190,6 +195,19 @@ private fun countNotablePlayers(event: MessageReceivedEvent) {
         }
     }
     event.channel.sendMessage("There are currently $count notable players being tracked.").queue()
+}
+
+private fun deleteNotablePlayer(event: MessageReceivedEvent, snowflake: Long) {
+    val channel = event.message.channel
+    val count = transaction(DbSettings.db) {
+        NotablePlayers.deleteWhere { NotablePlayers.snowflake eq snowflake }
+    }
+    channel.sendMessage(
+        if (count == 0)
+            "<@$snowflake> is not in the database."
+        else
+            "Deleted <@$snowflake> from the database."
+    ).queue()
 }
 
 private fun purgeNotablePlayers(event: MessageReceivedEvent) {
