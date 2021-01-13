@@ -7,8 +7,12 @@ import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class WispAdapter(private val config: Config) : ListenerAdapter() {
+object WispAdapter : ListenerAdapter(), KoinComponent {
+    private val config: Config by inject()
+
     override fun onReady(event: ReadyEvent) {
         val self = event.jda.selfUser
         println("Logged in as ${self.name}#${self.discriminator}")
