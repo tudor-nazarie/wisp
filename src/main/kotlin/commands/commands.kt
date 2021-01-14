@@ -18,4 +18,5 @@ val commands: List<Command> = listOf(
     heroes,
     players,
     last,
+    watch,
 )

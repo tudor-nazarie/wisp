@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import utils.getMatchEmbed
 import java.awt.Color
 import java.time.Instant
 import java.time.LocalDateTime
@@ -92,42 +93,14 @@ val last = Command(
             "Hero not found" to "https://pbs.twimg.com/profile_images/807755806837850112/WSFVeFeQ.jpg"
         }
 
-        // TODO: 12/01/2021 add game mode field
         channel.sendMessage(
-            embed {
-                author {
-                    name = event.jda.selfUser.name
-                    url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                    iconUrl = event.jda.selfUser.avatarUrl
-                }
-                color = Color(167, 39, 20)
-                title {
-                    title = "Match Result"
-                }
-                thumbnail = heroData.second
-                description =
-                    "${player.profile.personaname} " + (if (match.playerWon) "won" else "lost") + " as " + (if (match.radiant) "Radiant" else "Dire") + "."
-                fields {
-                    field {
-                        name = "Hero Played"
-                        value = heroData.first
-                        inline = true
-                    }
-                    field {
-                        name = "K/D/A"
-                        value = "${match.kills}/${match.deaths}/${match.assists}"
-                        inline = true
-                    }
-                    field {
-                        name = "DOTABUFF"
-                        value = "https://www.dotabuff.com/matches/${match.matchId}"
-                    }
-                    field {
-                        name = "OpenDota"
-                        value = "https://www.opendota.com/matches/${match.matchId}"
-                    }
-                }
-            }
+            getMatchEmbed(
+                event.jda.selfUser,
+                heroData.first,
+                heroData.second,
+                player,
+                match
+            )
         ).queue()
     }
 }
