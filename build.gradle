@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.21'
     id "org.jetbrains.kotlin.kapt" version "1.4.21"
+    id 'application'
 }
 
 group 'net.nazarie'
@@ -52,4 +53,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+application {
+    mainClassName("AppKt")
 }
