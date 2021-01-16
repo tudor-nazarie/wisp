@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.21'
     id "org.jetbrains.kotlin.kapt" version "1.4.21"
-    id 'application'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'net.nazarie'
@@ -55,6 +55,14 @@ test {
     useJUnitPlatform()
 }
 
-application {
-    mainClassName("AppKt")
+jar {
+    manifest {
+        attributes 'Main-Class': 'AppKt'
+    }
+}
+
+shadowJar {
+    archiveBaseName.set('wisp')
+    archiveClassifier.set('fat')
+    archiveVersion.set('')
 }

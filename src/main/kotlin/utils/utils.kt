@@ -1,7 +1,6 @@
 package utils
 
 import dsl.embed
-import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.SelfUser
 import network.models.Player
