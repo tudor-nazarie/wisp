@@ -33,7 +33,7 @@ data class Profile(
     val avatarmedium: String,
     val avatarfull: String,
     val profileurl: String,
-    @Json(name = "last_login") val lastLogin: String,
+    @Json(name = "last_login") val lastLogin: String?,
     val loccountrycode: String?,
     @Json(name = "is_contributor") val isContributor: Boolean?,
 )
