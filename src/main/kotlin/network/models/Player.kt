@@ -60,7 +60,7 @@ data class PlayerMatch(
     @Json(name = "lobby_type") val lobbyType: Int,
     @Json(name = "hero_id") val heroId: Int,
     @Json(name = "start_time") val startTime: Long,
-    val version: Int,
+    val version: Int?,
     val kills: Int,
     val deaths: Int,
     val assists: Int,
