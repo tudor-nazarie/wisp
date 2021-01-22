@@ -13,6 +13,7 @@ data class Config(val token: String, val activators: String) {
 
         @JvmStatic
         fun read(path: String): Config? {
+            // TODO: 22/01/2021 show a graceful error message if the file does not exist
             val json = File(path).bufferedReader().use { it.readText() }
             val adapter = moshi.adapter(Config::class.java)
             return adapter.fromJson(json)
