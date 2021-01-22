@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class Player(
-    @Json(name = "tracked_until") val trackedUntil: String,
+    @Json(name = "tracked_until") val trackedUntil: String?,
     @Json(name = "solo_competitive_rank") val soloCompetitiveRank: String?,
     @Json(name = "competitive_rank") val competitiveRank: String?,
     @Json(name = "rank_tier") val rankTier: Int?,
