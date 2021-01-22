@@ -10,7 +10,20 @@ val ping = Command(
     "Replies with pong"
 ) { event ->
     val channel = event.channel
-    channel.sendMessage("Pong!").queue()
+
+    val beeps = listOf(
+        "Laughing Beeps",
+        "Thankful Beeps",
+        "Denying Beeps",
+        "Friendly Beeps",
+        "Triumphant Beeps",
+        "Sorrowful Beeps",
+        "Angry Beeps",
+        "Meditative Beeps",
+        "Ominous beeps",
+    )
+
+    channel.sendMessage(beeps.random()).queue()
 }
 
 val commands: List<Command> = listOf(
