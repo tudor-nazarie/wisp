@@ -25,6 +25,9 @@ val players = command {
             name = "add"
             aliases { +"new" }
             description = "Add new notable player"
+            examples {
+                +("players add <SteamID> @User" to "Add the mentioned user to database with given SteamID")
+            }
             handler { args, event -> addNotablePlayer(args, event) }
         }
         command {
@@ -34,6 +37,9 @@ val players = command {
                 +"rm"
             }
             description = "Remove tracked notable player"
+            examples {
+                +("players remove @User" to "Remove the mentioned user from database")
+            }
             handler { args, event -> deleteNotablePlayer(args, event) }
         }
         command {

@@ -8,6 +8,7 @@ data class Command(
     val name: String,
     val aliases: List<String> = emptyList(),
     val description: String,
+    val examples: List<Pair<String, String>> = emptyList(),
     val subCommands: List<Command> = emptyList(),
     val handler: CommandHandler
 )

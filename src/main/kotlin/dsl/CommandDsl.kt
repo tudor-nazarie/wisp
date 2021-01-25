@@ -21,15 +21,27 @@ class Aliases : ArrayList<String>() {
 }
 
 @CommandDsl
+class Examples : ArrayList<Pair<String, String>>() {
+    operator fun Pair<String, String>.unaryPlus() {
+        add(this)
+    }
+}
+
+@CommandDsl
 class CommandBuilder {
     var name: String? = null
     private var aliases = mutableListOf<String>()
     var description: String? = null
+    private val examples = mutableListOf<Pair<String, String>>()
     private var subCommands = mutableListOf<Command>()
     private var handler: CommandHandler? = null
 
     fun aliases(init: Aliases.() -> Unit) {
         aliases.addAll(Aliases().apply(init))
+    }
+
+    fun examples(init: Examples.() -> Unit) {
+        examples.addAll(Examples().apply(init))
     }
 
     fun subCommands(init: SubCommands.() -> Unit) {
@@ -45,6 +57,7 @@ class CommandBuilder {
             name = name!!,
             aliases = aliases,
             description = description!!,
+            examples = examples,
             subCommands = subCommands,
             handler = handler!!
         )
