@@ -17,7 +17,7 @@ val ping = command {
             "Sorrowful Beeps",
             "Angry Beeps",
             "Meditative Beeps",
-            "Ominous beeps",
+            "Ominous Beeps",
         )
         channel.sendMessage(beeps.random()).queue()
     }
