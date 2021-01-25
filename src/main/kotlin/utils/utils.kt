@@ -7,6 +7,9 @@ import network.models.Player
 import network.models.PlayerMatch
 import java.awt.Color
 
+val String.snowflake: Long
+    get() = this.filter { it.isDigit() }.toLong()
+
 fun getMatchEmbed(
     selfUser: SelfUser,
     heroName: String,

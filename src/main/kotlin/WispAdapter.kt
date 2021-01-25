@@ -1,6 +1,5 @@
 import commands.Command
 import commands.commands
-import commands.errorHandler
 import config.Config
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -23,18 +22,32 @@ object WispAdapter : ListenerAdapter(), KoinComponent {
         if (event.message.author.isBot || !config.activators.contains(content[0])) {
             return
         }
-        val commandString = content.split(Regex("\\s+"))[0].substring(1)
-        val command: Command? = try {
-            commands.first { it.names.contains(commandString) }
-        } catch (e: NoSuchElementException) {
-            null
-        }
-        GlobalScope.launch {
-            if (command != null) {
-                command.handler(event)
-            } else {
-                errorHandler(event)
+        val args = content.substring(1).split(Regex("\\s+"))
+        launchCommand(args[0], commands, args.drop(1), event)
+    }
+
+    private fun launchCommand(
+        commandString: String,
+        commands: List<Command>,
+        args: List<String>,
+        event: MessageReceivedEvent
+    ) {
+        for (command in commands) {
+            val aliases = listOf(command.name) + command.aliases
+            if (aliases.contains(commandString)) {
+                if (command.subCommands.isEmpty()) {
+                    GlobalScope.launch {
+                        command.handler(args, event)
+                    }
+                } else {
+                    launchCommand(args[0], command.subCommands, args.drop(1), event)
+                }
+                return
             }
         }
+        // TODO: 25/01/2021 show a help command example
+        event.channel.sendMessage(
+            "No such command: `$commandString`."
+        ).queue()
     }
 }

@@ -4,22 +4,36 @@ import com.squareup.moshi.Moshi
 import db.DbSettings
 import db.Heroes
 import di.getInstance
+import dsl.command
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-val heroes = Command(listOf("hero", "heroes"), "Manage the hero cache") { event ->
-    val content = event.message.contentRaw
-    val tokens = content.split(Regex("\\s+"))
-
-    when (tokens[1]) {
-        "update" -> updateHeroCache(event)
-        "count" -> countHeroCache(event)
+val heroes = command {
+    name = "heroes"
+    aliases { +"hero" }
+    description = "Manage the hero cache"
+    subCommands {
+        command {
+            name = "update"
+            description = "Update the hero cache"
+            handler { _, event -> updateHeroCache(event) }
+        }
+        command {
+            name = "count"
+            description = "Count the heroes in the cache"
+            handler { _, event -> countHeroCache(event) }
+        }
+    }
+    handler { _, event ->
+        event.channel.sendMessage(
+            "See `.help heroes` for options"
+        ).queue()
     }
 }
 
-private suspend fun updateHeroCache(event: MessageReceivedEvent) {
+private suspend inline fun updateHeroCache(event: MessageReceivedEvent) {
     val openDotaService: OpenDotaService = getInstance()
     val moshi: Moshi = getInstance()
     val channel = event.channel

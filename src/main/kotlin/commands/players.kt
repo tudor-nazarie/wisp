@@ -4,110 +4,132 @@ import db.DbSettings
 import db.Heroes
 import db.NotablePlayers
 import di.getInstance
+import dsl.command
 import dsl.embed
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import utils.getMatchEmbed
+import utils.snowflake
 import java.awt.Color
 import java.time.Instant
 import java.time.LocalDateTime
 
-val players = Command(
-    listOf("np", "players"),
-    "Managed tracked notable players"
-) { event ->
-    val content = event.message.contentRaw
-    val tokens = content.split(Regex("\\s+"))
-
-    when (tokens[1]) {
-        "new", "add" -> {
-            val steamId = tokens[2]
-            val mentions = event.message.mentionedUsers
-            if (mentions.size > 0) {
-                val snowflake = mentions[0].idLong
-                addNotablePlayer(event, steamId.toLong(), snowflake)
-            } else {
-                event.channel.sendMessage(
-                    "Please specify a user to add."
-                ).queue()
+val players = command {
+    name = "players"
+    aliases { +"np" }
+    description = "Manage tracked notable players"
+    subCommands {
+        command {
+            name = "add"
+            aliases { +"new" }
+            description = "Add new notable player"
+            handler { args, event -> addNotablePlayer(args, event) }
+        }
+        command {
+            name = "remove"
+            aliases {
+                +"delete"
+                +"rm"
             }
+            description = "Remove tracked notable player"
+            handler { args, event -> deleteNotablePlayer(args, event) }
         }
-        "delete", "remove", "rm" -> event.message.mentionedUsers
-            .map { it.idLong }
-            .forEach { deleteNotablePlayer(event, it) }
-        "count" -> countNotablePlayers(event)
-        "purge" -> purgeNotablePlayers(event)
-        "help" -> TODO()
+        command {
+            name = "count"
+            description = "Count the number of notable players"
+            handler { _, event -> countNotablePlayers(event) }
+        }
+        command {
+            name = "purge"
+            description = "Delete all tracked notable players"
+            handler { _, event -> purgeNotablePlayers(event) }
+        }
     }
-}
-
-val last = Command(
-    listOf("last", "l"),
-    "Get last public match of player",
-) { event ->
-    val channel = event.message.channel
-    val mentions = event.message.mentionedUsers
-    val author = event.message.author
-    val activator = event.message.contentRaw[0]
-
-    val snowflakes = if (mentions.isNotEmpty()) mentions.map { it.idLong } else listOf(author.idLong)
-
-    val playerData: List<Pair<Long, Long>> = transaction(DbSettings.db) {
-        val result = mutableListOf<Pair<Long, Long>>()
-        snowflakes.forEach { snowflake ->
-            val query = NotablePlayers.select { NotablePlayers.snowflake eq snowflake }
-                .map { it[NotablePlayers.steamId] to it[NotablePlayers.snowflake] }
-            if (query.isEmpty()) {
-                channel.sendMessage(
-                    "User not in player database. Add them with '${activator}np add <steamId> <@$snowflake>'"
-                ).queue()
-            } else {
-                result.add(query[0])
-            }
-        }
-        result
-    }
-
-    val openDotaService: OpenDotaService = getInstance()
-    for (datum in playerData) {
-        val matchesResponse = openDotaService.getPlayerMatches(datum.first, 20)
-        val playerResponse = openDotaService.getPlayer(datum.first)
-        if (!matchesResponse.isSuccessful || !playerResponse.isSuccessful) {
-            channel.sendMessage(
-                "Could not grab matches for user <@${datum.second}>, Steam ID ${datum.first}, try again later."
-            ).queue()
-            continue
-        }
-        val match = matchesResponse.body()!![0]
-        val player = playerResponse.body()!!
-
-        val heroes = transaction(DbSettings.db) {
-            Heroes.select { Heroes.heroId eq match.heroId }
-                .map { it[Heroes.localizedName] to it[Heroes.name] }
-        }
-        val heroData = if (heroes.isNotEmpty()) {
-            heroes[0].first to "http://dotabase.dillerm.io/dota-vpk/panorama/images/heroes/selection/${heroes[0].second}_png.png"
-        } else {
-            "Hero not found" to "https://pbs.twimg.com/profile_images/807755806837850112/WSFVeFeQ.jpg"
-        }
-
-        channel.sendMessage(
-            getMatchEmbed(
-                event.jda.selfUser,
-                heroData.first,
-                heroData.second,
-                player,
-                match
-            )
+    handler { _, event ->
+        event.message.channel.sendMessage(
+            "See `.help players` for usage."
         ).queue()
     }
 }
 
-private suspend fun addNotablePlayer(event: MessageReceivedEvent, sId: Long, s: Long) {
-    val openDotaService: OpenDotaService = getInstance()
+val last = command {
+    name = "last"
+    aliases { +"l" }
+    description = "Get last public match of player"
+    handler { _, event ->
+        val message = event.message
+        val channel = message.channel
+        val mentions = message.mentionedUsers
+        val author = message.author
+
+        val snowflakes = if (mentions.isNotEmpty()) mentions.map { it.idLong } else listOf(author.idLong)
+
+        val playerData: List<Pair<Long, Long>> = transaction(DbSettings.db) {
+            val result = mutableListOf<Pair<Long, Long>>()
+            snowflakes.forEach { snowflake ->
+                val query = NotablePlayers.select { NotablePlayers.snowflake eq snowflake }
+                    .map { it[NotablePlayers.steamId] to it[NotablePlayers.snowflake] }
+                if (query.isEmpty()) {
+                    channel.sendMessage(
+                        "User not in player database."
+                    ).queue()
+                } else {
+                    result.add(query[0])
+                }
+            }
+            result
+        }
+
+        val openDotaService: OpenDotaService = getInstance()
+        for (datum in playerData) {
+            val matchesResponse = openDotaService.getPlayerMatches(datum.first, 20)
+            val playerResponse = openDotaService.getPlayer(datum.first)
+            if (!matchesResponse.isSuccessful || !playerResponse.isSuccessful) {
+                channel.sendMessage(
+                    "Could not grab matches for user <@${datum.second}>, Steam ID ${datum.first}, try again later."
+                ).queue()
+                continue
+            }
+            val match = matchesResponse.body()!![0]
+            val player = playerResponse.body()!!
+
+            val heroes = transaction(DbSettings.db) {
+                Heroes.select { Heroes.heroId eq match.heroId }
+                    .map { it[Heroes.localizedName] to it[Heroes.name] }
+            }
+            val heroData = if (heroes.isNotEmpty()) {
+                heroes[0].first to "http://dotabase.dillerm.io/dota-vpk/panorama/images/heroes/selection/${heroes[0].second}_png.png"
+            } else {
+                "Hero not found" to "https://pbs.twimg.com/profile_images/807755806837850112/WSFVeFeQ.jpg"
+            }
+
+            channel.sendMessage(
+                getMatchEmbed(
+                    event.jda.selfUser,
+                    heroData.first,
+                    heroData.second,
+                    player,
+                    match
+                )
+            ).queue()
+        }
+    }
+}
+
+private suspend fun addNotablePlayer(args: List<String>, event: MessageReceivedEvent) {
     val channel = event.message.channel
+    if (args.size < 2) {
+        // TODO: 25/01/2021 change this message
+        channel.sendMessage(
+            "Need at least 2 args: steam ID and discord @"
+        ).queue()
+    }
+    val sId = args[0].toLong()
+    val s = args[1].snowflake
+
+    val openDotaService: OpenDotaService = getInstance()
     val playerResponse = openDotaService.getPlayer(sId)
     if (!playerResponse.isSuccessful || playerResponse.body()?.profile?.accountId != sId) {
         channel.sendMessage("Could not find player with SteamID $sId.").queue()
@@ -159,19 +181,14 @@ private suspend fun addNotablePlayer(event: MessageReceivedEvent, sId: Long, s: 
     ).queue()
 }
 
-private fun countNotablePlayers(event: MessageReceivedEvent) {
-    val count = transaction(DbSettings.db) {
-        if (!NotablePlayers.exists()) {
-            0
-        } else {
-            NotablePlayers.selectAll().count()
-        }
-    }
-    event.channel.sendMessage("There are currently $count notable players being tracked.").queue()
-}
-
-private fun deleteNotablePlayer(event: MessageReceivedEvent, snowflake: Long) {
+private fun deleteNotablePlayer(args: List<String>, event: MessageReceivedEvent) {
     val channel = event.message.channel
+    if (args.isEmpty()) {
+        channel.sendMessage(
+            "Please specify a user to remove"
+        ).queue()
+    }
+    val snowflake = args[0].snowflake
     val count = transaction(DbSettings.db) {
         NotablePlayers.deleteWhere { NotablePlayers.snowflake eq snowflake }
     }
@@ -181,6 +198,17 @@ private fun deleteNotablePlayer(event: MessageReceivedEvent, snowflake: Long) {
         else
             "Deleted <@$snowflake> from the database."
     ).queue()
+}
+
+private fun countNotablePlayers(event: MessageReceivedEvent) {
+    val count = transaction(DbSettings.db) {
+        if (!NotablePlayers.exists()) {
+            0
+        } else {
+            NotablePlayers.selectAll().count()
+        }
+    }
+    event.channel.sendMessage("There are currently $count notable players being tracked.").queue()
 }
 
 private fun purgeNotablePlayers(event: MessageReceivedEvent) {

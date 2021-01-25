@@ -1,29 +1,26 @@
 package commands
 
-val errorHandler: CommandHandler = { event ->
-    val channel = event.channel
-    channel.sendMessage("No such command").queue()
-}
+import dsl.command
 
-val ping = Command(
-    listOf("ping", "beep"),
-    "Replies with pong"
-) { event ->
-    val channel = event.channel
-
-    val beeps = listOf(
-        "Laughing Beeps",
-        "Thankful Beeps",
-        "Denying Beeps",
-        "Friendly Beeps",
-        "Triumphant Beeps",
-        "Sorrowful Beeps",
-        "Angry Beeps",
-        "Meditative Beeps",
-        "Ominous beeps",
-    )
-
-    channel.sendMessage(beeps.random()).queue()
+val ping = command {
+    name = "ping"
+    aliases { +"beep" }
+    description = "Replies with pong!"
+    handler { _, event ->
+        val channel = event.channel
+        val beeps = listOf(
+            "Laughing Beeps",
+            "Thankful Beeps",
+            "Denying Beeps",
+            "Friendly Beeps",
+            "Triumphant Beeps",
+            "Sorrowful Beeps",
+            "Angry Beeps",
+            "Meditative Beeps",
+            "Ominous beeps",
+        )
+        channel.sendMessage(beeps.random()).queue()
+    }
 }
 
 val commands: List<Command> = listOf(
