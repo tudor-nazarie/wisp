@@ -44,13 +44,16 @@ fun getMatchEmbed(
         }
         color = Color(167, 39, 20)
         title {
-            title = "Match Result"
+            title = "Match Result" +
+                    if (gameModes.containsKey(match.gameMode))
+                        " (${gameModes[match.gameMode]}, ${match.duration.formattedDuration})"
+                    else
+                        " (${match.duration.formattedDuration})"
         }
         thumbnail = heroImage
         description =
             "${player.profile.personaname} " + (if (match.playerWon) "won" else "lost") + " as " + (if (match.radiant) "Radiant" else "Dire") + "."
 
-        // TODO: 12/01/2021 add game mode field
         fields {
             field {
                 name = "Hero Played"
@@ -68,11 +71,6 @@ fun getMatchEmbed(
                 inline = true
             }
             field {
-                name = "Duration"
-                value = match.duration.formattedDuration
-                inline = true
-            }
-            field {
                 name = "DOTABUFF"
                 value = "https://www.dotabuff.com/matches/${match.matchId}"
             }
@@ -82,3 +80,11 @@ fun getMatchEmbed(
             }
         }
     }
+
+val gameModes: Map<Int, String> = mapOf(
+    1 to "All Pick",
+    2 to "Captains Mode",
+    3 to "Random Draft",
+    4 to "Single Draft",
+    22 to "All Draft",
+)
