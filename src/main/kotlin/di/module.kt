@@ -14,4 +14,6 @@ val wispModule = module {
     single { provideMoshi() }
 
     single { provideOpenDotaService(get()) }
+
+    single { provideDateTimeFormatter() }
 }
