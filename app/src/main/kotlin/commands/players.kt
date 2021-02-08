@@ -73,7 +73,11 @@ val last = command {
         val snowflakes = if (mentions.isNotEmpty()) mentions.map { it.idLong } else listOf(author.idLong)
 
         val matchNumber = try {
-            message.contentRaw.substring(1).split(Regex("\\s+"))[1].toInt()
+            val x = message.contentRaw.substring(1).split(Regex("\\s+"))[1].toInt()
+            if (x < 1)
+                1
+            else
+                x
         } catch (e: NumberFormatException) {
             1
         }

@@ -65,7 +65,7 @@ data class PlayerMatch(
     val deaths: Int,
     val assists: Int,
     val skill: Int?,
-    @Json(name = "party_size") val partySize: Int,
+    @Json(name = "party_size") val partySize: Int?,
 ) {
     /**
      * Whether the user was on Radiant.
