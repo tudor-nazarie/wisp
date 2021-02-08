@@ -72,6 +72,12 @@ val last = command {
 
         val snowflakes = if (mentions.isNotEmpty()) mentions.map { it.idLong } else listOf(author.idLong)
 
+        val matchNumber = try {
+            message.contentRaw.substring(1).split(Regex("\\s+"))[1].toInt()
+        } catch (e: NumberFormatException) {
+            1
+        }
+
         val playerData: List<Pair<Long, Long>> = transaction(DbSettings.db) {
             val result = mutableListOf<Pair<Long, Long>>()
             snowflakes.forEach { snowflake ->
@@ -90,7 +96,7 @@ val last = command {
 
         val openDotaService: OpenDotaService = getInstance()
         for (datum in playerData) {
-            val matchesResponse = openDotaService.getPlayerMatches(datum.first, 20)
+            val matchesResponse = openDotaService.getPlayerMatches(datum.first, matchNumber)
             val playerResponse = openDotaService.getPlayer(datum.first)
             if (!matchesResponse.isSuccessful || !playerResponse.isSuccessful) {
                 channel.sendMessage(
@@ -98,7 +104,7 @@ val last = command {
                 ).queue()
                 continue
             }
-            val match = matchesResponse.body()!![0]
+            val match = matchesResponse.body()!![matchNumber - 1]
             val player = playerResponse.body()!!
 
             val heroes = transaction(DbSettings.db) {
@@ -143,10 +149,6 @@ private suspend fun addNotablePlayer(args: List<String>, event: MessageReceivedE
     }
     val player = playerResponse.body()!!
     transaction(DbSettings.db) {
-        if (!NotablePlayers.exists()) {
-            SchemaUtils.create(NotablePlayers)
-        }
-
         NotablePlayers.insert {
             it[steamId] = sId
             it[snowflake] = s

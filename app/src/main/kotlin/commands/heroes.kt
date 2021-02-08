@@ -7,7 +7,10 @@ import di.getInstance
 import dsl.command
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import network.OpenDotaService
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.deleteAll
+import org.jetbrains.exposed.sql.exists
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 val heroes = command {
@@ -47,9 +50,6 @@ private suspend inline fun updateHeroCache(event: MessageReceivedEvent) {
     val rolesAdapter = moshi.adapter(List::class.java)
 
     transaction(DbSettings.db) {
-        if (!Heroes.exists()) {
-            SchemaUtils.create(Heroes)
-        }
         Heroes.deleteAll()
 
         for (hero in heroes) {
