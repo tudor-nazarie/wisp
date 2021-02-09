@@ -78,7 +78,7 @@ val last = command {
                 1
             else
                 x
-        } catch (e: NumberFormatException) {
+        } catch (_: Exception) {
             1
         }
 
