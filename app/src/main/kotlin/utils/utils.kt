@@ -75,6 +75,10 @@ fun getMatchEmbed(
                 value = "https://www.dotabuff.com/matches/${match.matchId}"
             }
             field {
+                name = "STRATZ"
+                value = "https://stratz.com/matches/${match.matchId}"
+            }
+            field {
                 name = "OpenDota"
                 value = "https://www.opendota.com/matches/${match.matchId}"
             }
