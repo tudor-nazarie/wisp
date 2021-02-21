@@ -1,9 +1,8 @@
-package dsl
+package wisp.utils
 
 import net.dv8tion.jda.api.entities.MessageEmbed
 import java.awt.Color
 import java.time.temporal.TemporalAccessor
-import java.util.*
 
 @DslMarker
 annotation class EmbedDsl

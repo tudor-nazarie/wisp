@@ -1,17 +1,26 @@
-package dsl
+package wisp.commands
 
-import commands.Command
-import commands.CommandHandler
+import net.dv8tion.jda.api.entities.Message
+
+typealias CommandHandler = suspend (message: Message, args: List<String>, prefix: Char, usedAlias: String) -> Unit
+
+data class Command(
+    val name: String,
+    val aliases: List<String> = emptyList(),
+    val description: String,
+    val subCommands: List<Command> = emptyList(),
+    val restricted: Boolean = false,
+    val handler: CommandHandler,
+)
+
+val commands: List<Command> = listOf(
+    ping,
+    shutdown,
+    userconfig,
+)
 
 @DslMarker
-annotation class CommandDsl
-
-@CommandDsl
-class SubCommands : ArrayList<Command>() {
-    fun command(init: CommandBuilder.() -> Unit) {
-        add(CommandBuilder().apply(init).build())
-    }
-}
+private annotation class CommandDsl
 
 @CommandDsl
 class Aliases : ArrayList<String>() {
@@ -21,9 +30,9 @@ class Aliases : ArrayList<String>() {
 }
 
 @CommandDsl
-class Examples : ArrayList<Pair<String, String>>() {
-    operator fun Pair<String, String>.unaryPlus() {
-        add(this)
+class SubCommands : ArrayList<Command>() {
+    fun command(init: CommandBuilder.() -> Unit) {
+        add(CommandBuilder().apply(init).build())
     }
 }
 
@@ -32,16 +41,12 @@ class CommandBuilder {
     var name: String? = null
     private var aliases = mutableListOf<String>()
     var description: String? = null
-    private val examples = mutableListOf<Pair<String, String>>()
+    var restricted: Boolean = false
     private var subCommands = mutableListOf<Command>()
     private var handler: CommandHandler? = null
 
     fun aliases(init: Aliases.() -> Unit) {
         aliases.addAll(Aliases().apply(init))
-    }
-
-    fun examples(init: Examples.() -> Unit) {
-        examples.addAll(Examples().apply(init))
     }
 
     fun subCommands(init: SubCommands.() -> Unit) {
@@ -57,9 +62,9 @@ class CommandBuilder {
             name = name!!,
             aliases = aliases,
             description = description!!,
-            examples = examples,
             subCommands = subCommands,
-            handler = handler!!
+            restricted = restricted,
+            handler = handler!!,
         )
     }
 }
