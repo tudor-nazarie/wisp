@@ -9,16 +9,11 @@ fun main(args: Array<String>) {
         modules(wispModule)
     }.koin
 
-    val config = Config.read(
+    val config =
         if (args.isEmpty())
-            "config.json"
+            Config.read()
         else
-            args[0]
-    )
-    if (config == null) {
-        println("Could not read config file")
-        return
-    }
+            Config.read(args[0])
     koin.declare(config)
 
     DbSettings.init()
