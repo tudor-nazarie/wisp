@@ -1,4 +1,4 @@
-package db
+package wisp.db
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -13,8 +13,7 @@ object DbSettings {
     fun init() {
         db.transaction {
             SchemaUtils.create(
-                Heroes,
-                NotablePlayers,
+                Users,
             )
         }
     }

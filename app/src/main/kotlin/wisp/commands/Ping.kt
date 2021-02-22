@@ -1,13 +1,11 @@
-package commands
-
-import dsl.command
+package wisp.commands
 
 val ping = command {
     name = "ping"
     aliases { +"beep" }
     description = "Replies with pong!"
-    handler { _, event ->
-        val channel = event.channel
+    handler { message, _, _, _ ->
+        val channel = message.channel
         val beeps = listOf(
             "Laughing Beeps",
             "Thankful Beeps",
@@ -22,12 +20,3 @@ val ping = command {
         channel.sendMessage(beeps.random()).queue()
     }
 }
-
-val commands: List<Command> = listOf(
-    ping,
-    help,
-    heroes,
-    players,
-    last,
-    watch,
-)
