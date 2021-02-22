@@ -17,6 +17,7 @@ val commands: List<Command> = listOf(
     ping,
     shutdown,
     userconfig,
+    lastMatch,
 )
 
 @DslMarker

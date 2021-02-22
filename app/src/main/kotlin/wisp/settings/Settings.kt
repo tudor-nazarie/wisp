@@ -4,6 +4,7 @@ import com.typesafe.config.ConfigFactory
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.hocon.Hocon
 import kotlinx.serialization.hocon.decodeFromConfig
+import java.io.File
 
 @Serializable
 data class Settings(
@@ -13,6 +14,10 @@ data class Settings(
     val owner: Long? = null,
 ) {
     companion object {
-        val settings: Settings by lazy { Hocon.decodeFromConfig(ConfigFactory.load()) }
+        val settings: Settings by lazy {
+            val file = File("wisp.conf")
+            val config = ConfigFactory.parseFile(file)
+            Hocon.decodeFromConfig(config)
+        }
     }
 }
