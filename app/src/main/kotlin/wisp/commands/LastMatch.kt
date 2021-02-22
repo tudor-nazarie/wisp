@@ -21,6 +21,8 @@ val lastMatch = command {
     description = "Get last public match"
     handler { message, _, prefix, _ ->
         val channel = message.channel
+        channel.sendTyping().queue()
+
         val snowflake =
             if (message.mentionedUsers.isEmpty())
                 message.author.idLong
