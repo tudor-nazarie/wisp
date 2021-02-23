@@ -6,10 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Match(
     @SerialName("match_id") val matchId: Long,
-    @SerialName("barracks_status_dire") val barracksStatusDire: Int,
-    @SerialName("barracks_status_radiant") val barracksStatusRadiant: Int,
-    val cluster: Int,
-    val cosmetics: Map<Int, Int>,
     @SerialName("dire_score") val direScore: Int,
     @SerialName("start_time") val startTime: Long,
     val duration: Int,
@@ -18,7 +14,6 @@ data class Match(
     @SerialName("human_players") val humanPlayers: Int,
     @SerialName("leagueid") val leagueId: Int,
     @SerialName("lobby_type") val lobbyType: Int,
-    @SerialName("match_seq_num") val matchSeqNum: Long,
     val patch: Int,
     val players: List<MatchPlayer>,
 )
