@@ -1,5 +1,6 @@
 package wisp.commands
 
+import mu.KotlinLogging
 import wisp.db.DbSettings
 import wisp.db.User
 import wisp.db.Users
@@ -9,6 +10,8 @@ import wisp.utils.DotaResources
 import wisp.utils.dotaRed
 import wisp.utils.embed
 import java.util.*
+
+private val logger = KotlinLogging.logger {}
 
 val lastMatch = command {
     name = "last"
@@ -37,6 +40,9 @@ val lastMatch = command {
             ).queue()
             return@handler
         }
+
+        logger.debug { "Grabbing last match of player ID '${user.steamId}'" }
+
         val playerMatchesResponse = openDotaService.getPlayerMatches(user.steamId, 1)
         if (!playerMatchesResponse.isSuccessful) {
             channel.sendMessage(
@@ -46,6 +52,8 @@ val lastMatch = command {
         }
         val lastMatch = playerMatchesResponse.body()!![0]
         val lastMatchId = lastMatch.matchId
+
+        logger.debug { "Grabbing match info for game ID '$lastMatchId'" }
 
         val matchResponse = openDotaService.getMatch(lastMatchId)
         if (!matchResponse.isSuccessful) {

@@ -11,9 +11,10 @@ import wisp.commands.Command
 import wisp.commands.commands
 import wisp.settings.Settings.Companion.settings
 
-private val logger = KotlinLogging.logger {}
 
 object WispListener : ListenerAdapter() {
+    private val logger = KotlinLogging.logger {}
+
     override fun onReady(event: ReadyEvent) {
         val self = event.jda.selfUser
         logger.debug { "Logged in as ${self.name}#${self.discriminator}" }
@@ -22,12 +23,17 @@ object WispListener : ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val message = event.message
         val contentRaw = message.contentRaw
+        val author = message.author
         if (event.author.isBot || !settings.activators.contains(contentRaw[0])) {
             return
         }
         val usedPrefix = contentRaw[0]
-        val parts = contentRaw.substring(1).trim().split(Regex("\\s+"))
-        launchCommand(parts[0], commands, parts.drop(1), message, usedPrefix)
+        val commandText = contentRaw.substring(1).trim()
+        val parts = commandText.split(Regex("\\s+"))
+
+        logger.debug { "Command execution from ${author.name}#${author.discriminator}, activator used: '$usedPrefix' \"$commandText\"" }
+
+        launchCommand(parts[0], commands, parts.drop(1), message, usedPrefix, listOf(parts[0]))
     }
 
     private fun launchCommand(
@@ -36,11 +42,16 @@ object WispListener : ListenerAdapter() {
         args: List<String>,
         message: Message,
         usedPrefix: Char,
+        commandStack: List<String> = emptyList(),
     ) {
         for (command in commands) {
             val aliases = listOf(command.name) + command.aliases
             if (aliases.contains(commandString)) {
                 if (command.subCommands.isEmpty() || args.isEmpty()) {
+                    logger.debug {
+                        "Launching command \"${command.name}\", args \"$args\", stack \"" +
+                                commandStack.fold("$") { acc, s -> "$acc.$s" } + "\""
+                    }
                     if (!command.restricted || message.author.idLong == settings.owner) {
                         GlobalScope.launch { command.handler(message, args, usedPrefix, commandString) }
                     } else {
@@ -49,7 +60,14 @@ object WispListener : ListenerAdapter() {
                         ).queue()
                     }
                 } else {
-                    launchCommand(args[0], command.subCommands, args.drop(1), message, usedPrefix)
+                    launchCommand(
+                        args[0],
+                        command.subCommands,
+                        args.drop(1),
+                        message,
+                        usedPrefix,
+                        commandStack + args[0]
+                    )
                 }
                 return
             }
