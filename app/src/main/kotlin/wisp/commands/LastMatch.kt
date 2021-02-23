@@ -94,7 +94,7 @@ val lastMatch = command {
                     name = player.personaname ?: "Anonymous"
                     url = "https://www.opendota.com/players/${player.accountId}"
                     iconUrl =
-                        "https://dotabase.dillerm.io/dota-vpk/panorama/images/heroes/icons/${hero.fullName}_png.png"
+                        "https://dotabase.dillerm.io/dota-vpk/${hero.icon}"
                 }
                 color = dotaRed
                 description = desc
