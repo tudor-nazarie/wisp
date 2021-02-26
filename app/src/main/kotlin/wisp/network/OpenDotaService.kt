@@ -11,13 +11,13 @@ import retrofit2.http.Query
 import wisp.network.models.Match
 import wisp.network.models.Player
 import wisp.network.models.PlayerMatch
-import wisp.utils.formatJson
+import wisp.utils.R
 
 private val contentType: MediaType = "application/json".toMediaType()
 val openDotaService: OpenDotaService =
     Retrofit.Builder()
         .baseUrl("https://api.opendota.com/api/")
-        .addConverterFactory(formatJson.asConverterFactory(contentType))
+        .addConverterFactory(R.json.asConverterFactory(contentType))
         .build()
         .create(OpenDotaService::class.java)
 

@@ -4,7 +4,7 @@ import wisp.db.DbSettings
 import wisp.db.User
 import wisp.db.Users
 import wisp.db.transaction
-import wisp.utils.dotaRed
+import wisp.utils.R
 import wisp.utils.embed
 import java.time.LocalDateTime
 
@@ -34,7 +34,7 @@ val userconfig: Command = command {
                             title {
                                 title = "steam"
                             }
-                            color = dotaRed
+                            color = R.colors.dotaRed
                             description = """
                                 Links your Steam account to your Discord account.
                                 
@@ -81,7 +81,7 @@ val userconfig: Command = command {
                 title {
                     title = "$prefix$usedAlias <name> [value] (@User)"
                 }
-                color = dotaRed
+                color = R.colors.dotaRed
                 description = """
                     Configures user specific settings.
                     

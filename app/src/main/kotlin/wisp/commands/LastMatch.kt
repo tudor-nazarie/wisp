@@ -6,8 +6,7 @@ import wisp.db.User
 import wisp.db.Users
 import wisp.db.transaction
 import wisp.network.openDotaService
-import wisp.utils.DotaResources
-import wisp.utils.dotaRed
+import wisp.utils.R
 import wisp.utils.embed
 import java.util.*
 
@@ -66,20 +65,20 @@ val lastMatch = command {
         val player = match.players.first { it.accountId == user.steamId }
 
         val winStatus = if (player.win != 0) "Won" else "Lost"
-        val gameMode = DotaResources.gameModes[match.gameMode.toString()]
+        val gameMode = R.dota.gameModes[match.gameMode.toString()]
         val lobbyType =
-            if (DotaResources.lobbyTypes[match.lobbyType.toString()] == "Normal")
+            if (R.dota.lobbyTypes[match.lobbyType.toString()] == "Normal")
                 ""
             else
-                DotaResources.lobbyTypes[match.lobbyType.toString()] + " "
-        val heroName = DotaResources.heroes.first { it.id == player.heroId }
+                R.dota.lobbyTypes[match.lobbyType.toString()] + " "
+        val heroName = R.dota.heroes.first { it.id == player.heroId }
 
         val desc = """
             $winStatus a $lobbyType**$gameMode** match as ${heroName.localizedName} in ${match.duration.prettyTime}.
             See match details at [DOTABUFF](https://www.dotabuff.com/matches/${match.matchId}), [OpenDota](https://www.opendota.com/matches/${match.matchId}), [STRATZ](https://www.stratz.com/match/${match.matchId}).
         """.trimIndent()
 
-        val hero = DotaResources.heroes.first { it.id == player.heroId }
+        val hero = R.dota.heroes.first { it.id == player.heroId }
 
         // prolly a bad idea but idc
         val thumbnailUrl =
@@ -96,7 +95,7 @@ val lastMatch = command {
                     iconUrl =
                         "https://dotabase.dillerm.io/dota-vpk/${hero.icon}"
                 }
-                color = dotaRed
+                color = R.colors.dotaRed
                 description = desc
                 thumbnail = thumbnailUrl
                 fields {
