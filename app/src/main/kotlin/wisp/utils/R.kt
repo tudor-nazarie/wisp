@@ -1,8 +1,13 @@
 package wisp.utils
 
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import retrofit2.Retrofit
+import wisp.network.OpenDotaService
 import java.awt.Color
 
 object R {
@@ -12,6 +17,15 @@ object R {
         Json {
             ignoreUnknownKeys = true
         }
+    }
+
+    private val contentType: MediaType = "application/json".toMediaType()
+    val openDotaService: OpenDotaService by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.opendota.com/api/")
+            .addConverterFactory(R.json.asConverterFactory(contentType))
+            .build()
+            .create(OpenDotaService::class.java)
     }
 
     object colors {

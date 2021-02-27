@@ -60,7 +60,7 @@ val userconfig: Command = command {
                 val sId = args[0].toLong()
                 DbSettings.db.transaction {
                     if (user == null) {
-                        val newUser = User.new {
+                        User.new {
                             discordSnowflake = snowflake
                             steamId = sId
                         }

@@ -5,7 +5,6 @@ import wisp.db.DbSettings
 import wisp.db.User
 import wisp.db.Users
 import wisp.db.transaction
-import wisp.network.openDotaService
 import wisp.utils.R
 import wisp.utils.embed
 import java.util.*
@@ -42,7 +41,7 @@ val lastMatch = command {
 
         logger.debug { "Grabbing last match of player ID '${user.steamId}'" }
 
-        val playerMatchesResponse = openDotaService.getPlayerMatches(user.steamId, 1)
+        val playerMatchesResponse = R.openDotaService.getPlayerMatches(user.steamId, 1)
         if (!playerMatchesResponse.isSuccessful) {
             channel.sendMessage(
                 "An error occurred while trying to get match data, try again later."
@@ -54,7 +53,7 @@ val lastMatch = command {
 
         logger.debug { "Grabbing match info for game ID '$lastMatchId'" }
 
-        val matchResponse = openDotaService.getMatch(lastMatchId)
+        val matchResponse = R.openDotaService.getMatch(lastMatchId)
         if (!matchResponse.isSuccessful) {
             channel.sendMessage(
                 "An error occurred while trying to get match data, try again later."
