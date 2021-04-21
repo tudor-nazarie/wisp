@@ -11,7 +11,6 @@ import wisp.commands.Command
 import wisp.commands.commands
 import wisp.settings.Settings.Companion.settings
 
-
 object WispListener : ListenerAdapter() {
     private val logger = KotlinLogging.logger {}
 
