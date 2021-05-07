@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import wisp.network.OpenDotaService
 import java.awt.Color
 
+@Suppress("ClassName")
 object R {
     private val logger = KotlinLogging.logger {}
 
@@ -32,7 +33,6 @@ object R {
         val dotaRed = Color(167, 39, 14)
     }
 
-    @Suppress("ClassName")
     object dota {
         private const val heroesJsonPath = "/json/heroes.json"
         private const val gameModesJsonPath = "/json/game_modes.json"
