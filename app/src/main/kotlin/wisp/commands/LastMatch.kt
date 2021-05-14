@@ -34,7 +34,7 @@ val lastMatch = command {
         }
         if (user == null) {
             channel.sendMessage(
-                "Your Steam isn't linked. Try `${prefix}userconfig steam` to see how to do that"
+                "Your Steam isn't linked. Try `${prefix}userconfig steam` to see how to do that."
             ).queue()
             return@handler
         }
