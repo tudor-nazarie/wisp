@@ -8,7 +8,6 @@ import java.io.File
 
 @Serializable
 data class Settings(
-    val version: String,
     val token: String,
     val activators: String = ".",
     val owner: Long? = null,
