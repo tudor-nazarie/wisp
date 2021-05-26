@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import wisp.commands.Command
 import wisp.commands.commands
+import wisp.filters.filters
 import wisp.settings.Settings.Companion.settings
 
 object WispListener : ListenerAdapter() {
@@ -23,7 +24,13 @@ object WispListener : ListenerAdapter() {
         val message = event.message
         val contentRaw = message.contentRaw
         val author = message.author
-        if (event.author.isBot || !settings.activators.contains(contentRaw[0])) {
+
+        if (event.author.isBot) {
+            return
+        }
+        handleFilters(message)
+
+        if (!settings.activators.contains(contentRaw[0])) {
             return
         }
         val usedPrefix = contentRaw[0]
@@ -33,6 +40,17 @@ object WispListener : ListenerAdapter() {
         logger.debug { "Command execution from ${author.name}#${author.discriminator}, activator used: '$usedPrefix' \"$commandText\"" }
 
         launchCommand(parts[0], commands, parts.drop(1), message, usedPrefix, listOf(parts[0]))
+    }
+
+    private fun handleFilters(message: Message) {
+        val contentRaw = message.contentRaw
+
+        for (filter in filters) {
+            if (filter.regex.containsMatchIn(contentRaw)) {
+                logger.debug { "Firing filter, matches regex:" + filter.regex.toString() }
+                GlobalScope.launch { filter.handler(message) }
+            }
+        }
     }
 
     private fun launchCommand(
