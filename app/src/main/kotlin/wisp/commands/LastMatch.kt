@@ -49,7 +49,7 @@ val lastMatch = command {
             return@handler
         }
         val lastMatch = playerMatchesResponse.body()!![0]
-        val lastMatchId = lastMatch.matchId
+        val lastMatchId = lastMatch.matchID!!
 
         logger.debug { "Grabbing match info for game ID '$lastMatchId'" }
 
@@ -61,27 +61,27 @@ val lastMatch = command {
             return@handler
         }
         val match = matchResponse.body()!!
-        val player = match.players.first { it.accountId == user.steamId }
+        val player = match.players?.first { it.accountID == user.steamId }
 
-        val winStatus = if (player.win != 0) "Won" else "Lost"
+        val winStatus = if (player?.win != 0L) "Won" else "Lost"
         val gameMode = R.dota.gameModes[match.gameMode.toString()]
         val lobbyType =
             if (R.dota.lobbyTypes[match.lobbyType.toString()] == "Normal")
                 ""
             else
                 R.dota.lobbyTypes[match.lobbyType.toString()] + " "
-        val heroName = R.dota.heroes.first { it.id == player.heroId }
+        val heroName = R.dota.heroes.first { it.id == player?.heroID }
 
         val desc = """
-            $winStatus a $lobbyType**$gameMode** match as ${heroName.localizedName} in ${match.duration.prettyTime}.
-            See match details at [DOTABUFF](https://www.dotabuff.com/matches/${match.matchId}), [OpenDota](https://www.opendota.com/matches/${match.matchId}), [STRATZ](https://www.stratz.com/match/${match.matchId}).
+            $winStatus a $lobbyType**$gameMode** match as ${heroName.localizedName} in ${match.duration?.prettyTime}.
+            See match details at [DOTABUFF](https://www.dotabuff.com/matches/${match.matchID}), [OpenDota](https://www.opendota.com/matches/${match.matchID}), [STRATZ](https://www.stratz.com/match/${match.matchID}).
         """.trimIndent()
 
-        val hero = R.dota.heroes.first { it.id == player.heroId }
+        val hero = R.dota.heroes.first { it.id == player?.heroID }
 
         // prolly a bad idea but idc
         val thumbnailUrl =
-            if (player.radiant)
+            if (player?.isRadiant!!)
                 "https://raw.githubusercontent.com/mdiller/MangoByte/b735081b70e5e0aa7d69567821538213a6ca9dc0/resource/images/radiant.png"
             else
                 "https://raw.githubusercontent.com/mdiller/MangoByte/b735081b70e5e0aa7d69567821538213a6ca9dc0/resource/images/dire.png"
@@ -90,7 +90,7 @@ val lastMatch = command {
             embed {
                 author {
                     name = player.personaname ?: "Anonymous"
-                    url = "https://www.opendota.com/players/${player.accountId}"
+                    url = "https://www.opendota.com/players/${player.accountID}"
                     iconUrl =
                         "https://dotabase.dillerm.io/dota-vpk/${hero.icon}"
                 }
@@ -120,18 +120,18 @@ val lastMatch = command {
                     }
                 }
                 footer {
-                    text = "${match.matchId}"
+                    text = "${match.matchID}"
                 }
-                timestamp = Date(match.startTime * 1000).toInstant()
+                timestamp = Date(match.startTime!! * 1000).toInstant()
             }
         ).queue()
     }
 }
 
-private val Int.prettyTime: String
+private val Long.prettyTime: String
     get() {
         val mins = this / 60
         val secs = this % 60
-        return (if (mins != 0) "$mins minutes" else "0 minutes") +
-                (if (secs != 0) ", $secs seconds" else "")
+        return (if (mins != 0L) "$mins minutes" else "0 minutes") +
+                (if (secs != 0L) ", $secs seconds" else "")
     }

@@ -17,6 +17,7 @@ object R {
     val json: Json by lazy {
         Json {
             ignoreUnknownKeys = true
+            coerceInputValues = true
         }
     }
 

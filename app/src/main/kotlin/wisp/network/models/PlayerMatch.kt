@@ -2,29 +2,47 @@ package wisp.network.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class PlayerMatch(
-    @SerialName("match_id") val matchId: Long,
-    @SerialName("player_slot") val playerSlot: Int,
-    @SerialName("radiant_win") val radiantWin: Boolean,
-    val duration: Int,
-    @SerialName("game_mode") val gameMode: Int,
-    @SerialName("lobby_type") val lobbyType: Int,
-    @SerialName("hero_id") val heroId: Int,
-    @SerialName("start_time") val startTime: Long,
-    val version: Int?,
-    val kills: Int,
-    val deaths: Int,
-    val assists: Int,
-    val skill: Int?,
-    @SerialName("party_size") val partySize: Int?,
+    @SerialName("match_id")
+    val matchID: Long? = null,
+
+    @SerialName("player_slot")
+    val playerSlot: Long? = null,
+
+    @SerialName("radiant_win")
+    val radiantWin: Boolean? = null,
+
+    val duration: Long? = null,
+
+    @SerialName("game_mode")
+    val gameMode: Long? = null,
+
+    @SerialName("lobby_type")
+    val lobbyType: Long? = null,
+
+    @SerialName("hero_id")
+    val heroID: Long? = null,
+
+    @SerialName("start_time")
+    val startTime: Long? = null,
+
+    val version: Long? = null,
+    val kills: Long? = null,
+    val deaths: Long? = null,
+    val assists: Long? = null,
+    val skill: JsonObject? = null,
+
+    @SerialName("leaver_status")
+    val leaverStatus: Long? = null,
+
+    @SerialName("party_size")
+    val partySize: Long? = null
 ) {
-    /**
-     * Whether the user was on Radiant.
-     */
     val radiant: Boolean
-        get() = playerSlot in 0..127
+        get() = playerSlot in 1L..127
 
     /**
      * Whether the user was on Dire.
@@ -33,11 +51,12 @@ data class PlayerMatch(
         get() = !radiant
 
     val direWin: Boolean
-        get() = !radiantWin
+        get() = !radiantWin!!
 
     /**
      * Whether the player won the match.
      */
     val playerWon: Boolean
-        get() = (radiantWin && radiant) || (direWin && dire)
+        get() = (radiantWin!! && radiant) || (direWin && dire)
 }
+
