@@ -29,7 +29,7 @@ val userconfig: Command = command {
                 }
 
                 if (args.isEmpty()) {
-                    channel.sendMessage(
+                    channel.sendMessageEmbeds(
                         embed {
                             title {
                                 title = "steam"
