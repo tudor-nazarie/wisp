@@ -86,7 +86,7 @@ val lastMatch = command {
             else
                 "https://raw.githubusercontent.com/mdiller/MangoByte/b735081b70e5e0aa7d69567821538213a6ca9dc0/resource/images/dire.png"
 
-        channel.sendMessage(
+        channel.sendMessageEmbeds(
             embed {
                 author {
                     name = player.personaname ?: "Anonymous"

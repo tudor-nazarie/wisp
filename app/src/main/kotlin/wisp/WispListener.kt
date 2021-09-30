@@ -30,7 +30,7 @@ object WispListener : ListenerAdapter() {
         }
         handleFilters(message)
 
-        if (!settings.activators.contains(contentRaw[0])) {
+        if (contentRaw.isNotEmpty() && !settings.activators.contains(contentRaw[0])) {
             return
         }
         val usedPrefix = contentRaw[0]
