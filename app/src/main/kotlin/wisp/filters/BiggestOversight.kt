@@ -6,8 +6,6 @@ const val oversightText =
 val biggestOversight = filter {
     regex = "biggest\\s+oversight".toRegex(RegexOption.IGNORE_CASE)
     handler { message ->
-        val channel = message.channel
-
         message.reply(oversightText).queue()
     }
 }

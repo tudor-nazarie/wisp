@@ -76,7 +76,7 @@ val userconfig: Command = command {
     handler { message, _, prefix, usedAlias ->
         val channel = message.channel
 
-        channel.sendMessage(
+        channel.sendMessageEmbeds(
             embed {
                 title {
                     title = "$prefix$usedAlias <name> [value] (@User)"
