@@ -1,5 +1,6 @@
 package wisp
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
@@ -12,6 +13,7 @@ import wisp.commands.commands
 import wisp.filters.filters
 import wisp.settings.Settings.Companion.settings
 
+@OptIn(DelicateCoroutinesApi::class)
 object WispListener : ListenerAdapter() {
     private val logger = KotlinLogging.logger {}
 

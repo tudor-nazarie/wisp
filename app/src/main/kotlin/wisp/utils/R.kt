@@ -1,6 +1,7 @@
 package wisp.utils
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
@@ -10,6 +11,7 @@ import retrofit2.Retrofit
 import wisp.network.OpenDotaService
 import java.awt.Color
 
+@OptIn(ExperimentalSerializationApi::class)
 @Suppress("ClassName")
 object R {
     private val logger = KotlinLogging.logger {}
